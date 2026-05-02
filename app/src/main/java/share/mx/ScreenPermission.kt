@@ -1,6 +1,7 @@
 package share.mx
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -87,10 +88,12 @@ class ScreenPermission : AppCompatActivity() {
         }
     }
 
+
     private fun goToNextScreen() {
         // startActivity(Intent(this, HomeActivity::class.java))
         // finish()
-        Toast.makeText(this, "Ir a la siguiente pantalla", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, HomeActivity::class.java))
+        finish()
     }
 
 
