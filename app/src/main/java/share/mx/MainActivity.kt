@@ -10,6 +10,14 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import java.io.PrintWriter
+import java.net.Socket
+import org.json.JSONObject
+import android.util.Log
+
 class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -17,24 +25,58 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        val mainView = findViewById<android.view.View>(R.id.main)
+        // ------ INICIO PRUEBA DE SOCKET (SE EJECUTA SOLA AL ABRIR LA APP) ------
+        GlobalScope.launch(Dispatchers.IO) {
+            try {
 
-        val btnContinuar = findViewById<ImageButton>(R.id.btnContinuar)
+                val socket = Socket("192.168.1.75", 6881)
 
+                val jsonEnvio = JSONObject().apply {
+                    put("action", "handshake")
+                    put("client_id", "multifont-android-01")
+                    put("ip_local", "192.168.1.75")
+                    put("puerto_escucha", 6881)
+                }
 
-        ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+                val salida = PrintWriter(socket.outputStream, true)
+                salida.println(jsonEnvio.toString())
+
+                val entrada = socket.inputStream.bufferedReader()
+                val respuestaServidor = entrada.readLine()
+
+                Log.d("P2P_TEST", "📥 Respuesta de Python: $respuestaServidor")
+
+                socket.close()
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e("P2P_TEST", "❌ Error de conexión: ${e.message}")
+            }
         }
-        btnContinuar.setOnClickListener {
-            val intent = Intent(this, ScreenPermission::class.java)
-            startActivity(intent)
-        }
+        // ------ FIN PRUEBA DE SOCKET ------
 
-        val controller = WindowCompat.getInsetsController(window, window.decorView)
-        controller.systemBarsBehavior =
-            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
-        controller.hide(WindowInsetsCompat.Type.systemBars())
+
+        try {
+            val mainView = findViewById<android.view.View>(R.id.main)
+            val btnContinuar = findViewById<ImageButton>(R.id.btnContinuar)
+
+            if (mainView != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(mainView) { v, insets ->
+                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                    insets
+                }
+            }
+
+            btnContinuar?.setOnClickListener {
+                val intent = Intent(this, ScreenPermission::class.java)
+                startActivity(intent)
+            }
+
+            val controller = WindowCompat.getInsetsController(window, window.decorView)
+            controller.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            controller.hide(WindowInsetsCompat.Type.systemBars())
+        } catch (e: Exception) {
+            println("Aviso: No se cargaron los elementos visuales, pero el socket sigue intentando.")
+        }
     }
 }
