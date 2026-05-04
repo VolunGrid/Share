@@ -1,7 +1,8 @@
 plugins {
-    alias(libs.plugins.android.application)
+    id("com.android.application")
+    // NO pongas org.jetbrains.kotlin.android aquí
+    id("kotlin-parcelize")
 }
-
 android {
     namespace = "share.mx"
     compileSdk {
@@ -41,6 +42,11 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.core.ktx)
     implementation(libs.material)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.10.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+    implementation("androidx.documentfile:documentfile:1.0.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

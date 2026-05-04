@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_margin="2dp">
+
+    <ImageView
+        android:id="@+id/imgPreview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:contentDescription="Vista previa" />
+
+    <LinearLayout
+        android:id="@+id/layoutVideoInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="6dp"
+        android:background="#66000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="6dp"
+        android:paddingTop="3dp"
+        android:paddingEnd="6dp"
+        android:paddingBottom="3dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/imgVideoIcon"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:src="@android:drawable/ic_media_play"
+            android:contentDescription="Video"
+            app:tint="@android:color/white" />
+
+        <TextView
+            android:id="@+id/txtDuracion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="0:00"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <View
+        android:id="@+id/overlaySeleccion"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#6634B5E4"
+        android:visibility="gone" />
+
+    <ImageView
+        android:id="@+id/imgCheckSeleccion"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="8dp"
+        android:src="@android:drawable/checkbox_on_background"
+        android:contentDescription="Seleccionado"
+        android:visibility="gone"
+        app:tint="@android:color/white" />
+
+</FrameLayout>
