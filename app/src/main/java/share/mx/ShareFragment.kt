@@ -10,15 +10,16 @@ import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.view.View
-import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.constraintlayout.motion.widget.MotionLayout
 import androidx.core.content.ContextCompat
 import androidx.documentfile.provider.DocumentFile
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -38,21 +39,18 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
     private lateinit var rvArchivos: RecyclerView
     private lateinit var adapter: GaleriaAdapter
 
-
     private val listaGaleria = mutableListOf<GaleriaItem>()
     private val archivosSeleccionados = linkedSetOf<ArchivoItem>()
     private val archivosCargados = mutableListOf<ArchivoItem>()
-    private var modoSeleccion = false
-    private lateinit var fabMain: com.google.android.material.floatingactionbutton.FloatingActionButton
-    private lateinit var fabEnviar: com.google.android.material.floatingactionbutton.FloatingActionButton
-    private lateinit var fabCarpeta: com.google.android.material.floatingactionbutton.FloatingActionButton
-    private lateinit var fabActualizar: com.google.android.material.floatingactionbutton.FloatingActionButton
-    private lateinit var fabOverlay: View
-    private lateinit var layoutAccionEnviar: View
-    private lateinit var layoutAccionCarpeta: View
-    private lateinit var layoutAccionActualizar: View
 
-    private var fabMenuAbierto = false
+    private var modoSeleccion = false
+
+    private lateinit var fabMotionLayout: MotionLayout
+    private lateinit var fabMain: FloatingActionButton
+    private lateinit var fabActualizar: FloatingActionButton
+    private lateinit var fabCarpeta: FloatingActionButton
+    private lateinit var fabEnviar: FloatingActionButton
+    private lateinit var fabOverlay: View
 
     private val permisosLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -60,7 +58,7 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
         val concedido = permisos.values.all { it }
         if (concedido) {
             cargarArchivosMixtos()
-        } else {
+        } else if (isAdded) {
             Toast.makeText(requireContext(), "Permisos denegados", Toast.LENGTH_SHORT).show()
         }
     }
@@ -68,14 +66,15 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
     private val carpetaLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocumentTree()
     ) { uri ->
-        if (uri == null) return@registerForActivityResult
+        if (uri == null || !isAdded) return@registerForActivityResult
 
         val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or
                 Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 
         try {
             requireContext().contentResolver.takePersistableUriPermission(uri, flags)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "No se pudo persistir permiso para $uri", e)
         }
 
         guardarTreeUri(uri)
@@ -86,15 +85,12 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
         super.onViewCreated(view, savedInstanceState)
 
         rvArchivos = view.findViewById(R.id.rvArchivos)
-
+        fabMotionLayout = view.findViewById(R.id.fabMotionLayout)
         fabMain = view.findViewById(R.id.fabMain)
         fabEnviar = view.findViewById(R.id.fabEnviar)
         fabCarpeta = view.findViewById(R.id.fabCarpeta)
         fabActualizar = view.findViewById(R.id.fabActualizar)
         fabOverlay = view.findViewById(R.id.fabOverlay)
-        layoutAccionEnviar = view.findViewById(R.id.layoutAccionEnviar)
-        layoutAccionCarpeta = view.findViewById(R.id.layoutAccionCarpeta)
-        layoutAccionActualizar = view.findViewById(R.id.layoutAccionActualizar)
 
         fabMain.setOnClickListener {
             toggleFabMenu()
@@ -153,9 +149,28 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
             }
         }
 
-
+        fabMotionLayout.post {
+            //fabMotionLayout.transitionToStart()
+            fabMotionLayout.setProgress(0f)
+        }
 
         verificarPermisosYCargar()
+    }
+
+    private fun toggleFabMenu() {
+        if (fabMotionLayout.progress > 0.5f) {
+            cerrarFabMenu()
+        } else {
+            abrirFabMenu()
+        }
+    }
+
+    private fun abrirFabMenu() {
+        fabMotionLayout.transitionToEnd()
+    }
+
+    private fun cerrarFabMenu() {
+        fabMotionLayout.transitionToStart()
     }
 
     private fun verificarPermisosYCargar() {
@@ -475,7 +490,10 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
     }
 
     private fun compartirSeleccionados() {
-        if (archivosSeleccionados.isEmpty()) return
+        if (archivosSeleccionados.isEmpty()) {
+            Toast.makeText(requireContext(), "Selecciona al menos un archivo", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val uris = ArrayList<Uri>()
         archivosSeleccionados.forEach { uris.add(it.uri) }
@@ -490,55 +508,5 @@ class ShareFragment : Fragment(R.layout.fragment_share) {
         }
 
         startActivity(Intent.createChooser(shareIntent, "Compartir archivos"))
-    }
-
-    private fun toggleFabMenu() {
-        if (fabMenuAbierto) cerrarFabMenu() else abrirFabMenu()
-    }
-
-    private fun abrirFabMenu() {
-        fabMenuAbierto = true
-        fabOverlay.visibility = View.VISIBLE
-
-        mostrarAccionFab(layoutAccionActualizar, 0)
-        mostrarAccionFab(layoutAccionCarpeta, 1)
-        mostrarAccionFab(layoutAccionEnviar, 2)
-
-        fabMain.animate().rotation(45f).setDuration(200).start()
-    }
-
-    private fun cerrarFabMenu() {
-        fabMenuAbierto = false
-        fabOverlay.visibility = View.GONE
-
-        ocultarAccionFab(layoutAccionActualizar)
-        ocultarAccionFab(layoutAccionCarpeta)
-        ocultarAccionFab(layoutAccionEnviar)
-
-        fabMain.animate().rotation(0f).setDuration(200).start()
-    }
-
-    private fun mostrarAccionFab(view: View, index: Int) {
-        view.visibility = View.VISIBLE
-        view.alpha = 0f
-        view.translationY = 40f
-
-        view.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setStartDelay((index * 40).toLong())
-            .setDuration(180)
-            .start()
-    }
-
-    private fun ocultarAccionFab(view: View) {
-        view.animate()
-            .alpha(0f)
-            .translationY(20f)
-            .setDuration(120)
-            .withEndAction {
-                view.visibility = View.GONE
-            }
-            .start()
     }
 }
