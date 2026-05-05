@@ -3,5 +3,19 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="colorPrimary">#447055</color>
+    <!-- Colores para las tarjetas de categorías -->
+    <color name="cardDocumentBg">#FFE5E5</color>
+    <color name="cardDocumentIcon">#FF6B6B</color>
 
+    <color name="cardImageBg">#D4F4DD</color>
+    <color name="cardImageIcon">#4CAF50</color>
+
+    <color name="cardVideoBg">#FFF4E0</color>
+    <color name="cardVideoIcon">#FFB84D</color>
+
+    <color name="cardOthersBg">#E8E4F3</color>
+    <color name="cardOthersIcon">#9C88D4</color>
+
+    <color name="colorText">#2C3E50</color>
+    <color name="cardBackground" />
 </resources>

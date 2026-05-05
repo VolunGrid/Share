@@ -1,0 +1,17 @@
+<resources>
+
+    <style name="CustomBottomNavActiveIndicator"
+        parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:width">40dp</item>
+        <item name="android:height">40dp</item>
+        <item name="android:color">@android:color/white</item>
+        <item name="marginHorizontal">0dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Share.BottomIndicator</item>
+    </style>
+
+    <style name="ShapeAppearance.Share.BottomIndicator" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+</resources>
