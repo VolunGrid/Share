@@ -1,5 +1,7 @@
 package share.mx
 
+import android.os.Build
+import android.provider.MediaStore
 import android.util.Size
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -20,13 +22,25 @@ class FotoGridAdapter(
 
     override fun onBindViewHolder(holder: FotoViewHolder, position: Int) {
         val item = lista[position]
+        val context = holder.itemView.context
 
-        val thumb = holder.itemView.context.contentResolver.loadThumbnail(
-            item.uri,
-            Size(300, 300),
-            null
-        )
-        holder.imageView.setImageBitmap(thumb)
+        try {
+            // Verificamos si el celular tiene Android 10 (API 29) o más nuevo
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val thumb = context.contentResolver.loadThumbnail(
+                    item.uri,
+                    Size(300, 300),
+                    null
+                )
+                holder.imageView.setImageBitmap(thumb)
+            } else {
+                // Fallback para celulares con Android 9 o más viejitos
+                val bitmap = MediaStore.Images.Media.getBitmap(context.contentResolver, item.uri)
+                holder.imageView.setImageBitmap(bitmap)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun getItemCount(): Int = lista.size

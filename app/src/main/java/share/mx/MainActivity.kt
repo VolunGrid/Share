@@ -32,10 +32,7 @@ class MainActivity : AppCompatActivity() {
                 val socket = Socket("192.168.1.75", 6881)
 
                 val jsonEnvio = JSONObject().apply {
-                    put("action", "handshake")
-                    put("client_id", "multifont-android-01")
-                    put("ip_local", "192.168.1.75")
-                    put("puerto_escucha", 6881)
+                    put("action", "get_peers")
                 }
 
                 val salida = PrintWriter(socket.outputStream, true)
